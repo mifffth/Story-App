@@ -89,8 +89,6 @@ export function renderStories(container, stories) {
   </main>
 `;
 
-  document.getElementById('main-content')?.focus();
-
   if (stories.length === 0) {
     container.innerHTML = '<h2 class="font-bold mb-4 text-xl">Belum ada cerita</h2>';
     return;

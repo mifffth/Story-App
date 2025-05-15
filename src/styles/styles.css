@@ -146,10 +146,10 @@ article img {
 
 .skip-link {
   position: absolute;
-  left: -40px;
   transform: translateY(-100%);
   transition: transform 0.3s ease-in-out;
-  top: auto;
+  top: -999px;
+  left: -999px;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -162,7 +162,6 @@ article img {
 
 .skip-link:focus {
   transform: translateY(0%);
-  position: absolute;
   left: 16px;
   top: 16px;
   width: auto;
