@@ -1,49 +1,71 @@
-import { loadStoryListView } from './views/story-list-view.js';
-import { loadAddStoryView } from './views/add-story-view.js';
-import { loadLoginView } from './views/login-view.js';
-import { loadRegisterView } from './views/register-view.js';
+import * as css from '../styles/styles.css';
 
+// import { AuthenticationView } from './views/authentication-view.js';
+// import { DefaultView } from './views/default-view.js';
+import { LoginView } from './views/login-view.js';
+import { RegisterView } from './views/register-view.js';
+import { StoryListView } from './views/story-list-view.js';
+import { StoryAddView } from './views/story-add-view.js';
+import { NotFoundView } from './views/not-found-view.js';
+
+
+// import { AuthenticationPresenter } from './presenters/authentication-presenter.js';
+// import { DefaultPresenter } from './presenters/default-presenter.js';
 import { LoginPresenter } from './presenters/login-presenter.js';
 import { RegisterPresenter } from './presenters/register-presenter.js';
 import { StoryListPresenter } from './presenters/story-list-presenter.js';
-import { AddStoryPresenter } from './presenters/add-story-presenter.js';
+import { StoryAddPresenter } from './presenters/story-add-presenter.js';
+import { NotFoundPresenter } from './presenters/not-found-presenter.js';
 import { updateAuthUI } from './utils/auth-ui.js';
-
 const main = document.querySelector('main');
 
-function renderView() {
-    document.querySelectorAll('link[id$="-style"]').forEach(link => link.remove());
+// const authView = new AuthenticationView();
+// // const authPresenter = new AuthenticationPresenter();
+// authView.setPresenter(authPresenter);
+// authPresenter.setView(authView);
+// authPresenter.onPageLoad();
 
-    const hash = window.location.hash || '#/stories';
+function renderView() {
+    const hash = window.location.hash || null;
+
+    const token = localStorage.getItem('token');
+    const loggedIn = !!token;
+    if (!loggedIn && !['#/login', '#/logout', '#/add', '#/register'].includes(hash)) {
+        alert('Anda harus masuk untuk melihat cerita!');
+        window.location.hash = '#/login';
+        return;
+    }
 
     document.startViewTransition(() => {
+        let view = null;
+        let presenter = null;
         switch (hash) {
-            case '#/stories':
-                const storyListPresenter = new StoryListPresenter(loadStoryListView, main);
-                loadStoryListView(main, storyListPresenter);
-                break;
-            case '#/add': {
-                const view = loadAddStoryView;
-                const addStoryPresenter = new AddStoryPresenter(view, main);
-                addStoryPresenter.init();
-                break;
-            }
             case '#/login':
-                const loginPresenter = new LoginPresenter(loadLoginView, main);
-                loadLoginView(main, loginPresenter);
+                view = new LoginView(main);
+                presenter = new LoginPresenter();
+                break;
+            case '#/stories':
+                view = new StoryListView(main);
+                presenter = new StoryListPresenter();
+                break;
+            case '#/add':
+                view = new StoryAddView(main);
+                presenter = new StoryAddPresenter();
                 break;
             case '#/register':
-                const registerPresenter = new RegisterPresenter(loadRegisterView, main);
-                loadRegisterView(main, registerPresenter);
+                view = new RegisterView(main);
+                presenter = new RegisterPresenter();
                 break;
             default:
-                main.innerHTML = `<p>Halaman tidak ditemukan</p>`;
+                view = new NotFoundView(main);
+                presenter = new NotFoundPresenter();
         }
+        view.setPresenter(presenter);
+        presenter.setView(view);
+        presenter.onPageLoad();
 
         setTimeout(() => {
             gsap.fromTo(main, { opacity: 0 }, { opacity: 1, duration: 0.5 });
-
-            updateAuthUI();
         });
     });
 }
@@ -77,7 +99,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }, 1200);
         }
     });
-
     document.querySelectorAll('nav a, nav button').forEach(link => {
         link.addEventListener('mouseenter', () => {
             gsap.to(link, { scale: 1.1, duration: 0.2, ease: 'power2.out' });

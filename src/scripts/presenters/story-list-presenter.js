@@ -1,26 +1,41 @@
 import { fetchStories } from '../models/story-model.js';
-import { showLoginPrompt, showLoading, showError, renderStories } from '../views/story-list-view.js';
 
 export class StoryListPresenter {
-  constructor(view, container) {
-    this.view = view;
-    this.container = container;
+  constructor() {
+    this.view = null;
+    this.cachedStories = [];
+  } 
+
+  setView(view) {
+      this.view = view;
+  }
+  
+  async onLoginClicked() {
+    window.location.hash = '#/login';
   }
 
-  async loadStories() {
+  async onPageLoad() {
     const token = localStorage.getItem('token');
     if (!token) {
-      showLoginPrompt(this.container);
+      this.view.renderLogin();
       return;
     }
 
-    showLoading(this.container);
-
+    this.view.renderLoading();
     try {
-      const stories = await fetchStories();
-      renderStories(this.container, stories);
+      this.cachedStories = await fetchStories();
+      this.view.renderStoryList(this.cachedStories);
     } catch (error) {
-      showError(this.container, error.message);
+      this.view.renderError(error.message);
+    }
+  }
+
+  async onStorySelected(index) {
+    const story = this.cachedStories[index];
+    if (!story.lat || !story.lon) {
+      alert('Cerita ini tidak memiliki data lokasi.');
+    } else {
+      this.view.renderStory(story);
     }
   }
 }

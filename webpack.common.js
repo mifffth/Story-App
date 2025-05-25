@@ -3,17 +3,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: {
-    app: path.resolve(__dirname, 'src/scripts/index.js'),
-  },
+  entry: path.resolve(__dirname, 'src/scripts/index.js'),
   output: {
-    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    filename: '[name].bundle.js',
   },
   module: {
     rules: [
       {
-        test: /\.(png|jpe?g|gif)$/i,
+        test: /\.(png|jpe?g|gif)$/,
         type: 'asset/resource',
       },
     ],
@@ -25,7 +23,7 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src/public/'),
+          from: path.resolve(__dirname, 'src/public'),
           to: path.resolve(__dirname, 'dist/'),
         },
       ],

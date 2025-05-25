@@ -2,40 +2,63 @@ import { loginUser } from '../models/auth-model.js';
 import { updateAuthUI } from '../utils/auth-ui.js';
 
 export class LoginPresenter {
-  constructor(view, container) {
-    this.view = view;
-    this.container = container;
+  constructor() {
+      this.view = null;
+  }
+
+  setView(view) {
+      this.view = view;
+  }
+
+  async onPageLoad() {
+    this.view.render();
   }
 
   async onLoginSubmit(email, password) {
-    const overlay = this._showOverlay("Tunggu sebentar...");
+    this.view.showLoadingOverlay("Tunggu sebentar...");
     try {
       const token = await loginUser(email, password);
-      localStorage.setItem('token', token);
+      this.view.saveToken(token); 
       updateAuthUI();
-      alert('Login berhasil!');
-      window.location.hash = '#/stories';
+      this.view.showAlert('Login berhasil!');
+      this.view.navigateTo('#/stories');
     } catch (err) {
-      alert(err.message);
+      this.view.showAlert(err.message);
     } finally {
-      gsap.to(overlay, {
-        opacity: 0,
-        duration: 0.3,
-        onComplete: () => overlay.remove()
-      });
+      this.view.hideLoadingOverlay();
     }
   }
+  
 
-  onRegisterClicked() {
-    window.location.hash = '#/register';
-  }
+  // async onLoginSubmit(email, password) {
+  //   const overlay = this._showOverlay("Tunggu sebentar...");
+  //   try {
+  //     const token = await loginUser(email, password);
+  //     localStorage.setItem('token', token);
+  //     updateAuthUI();
+  //     alert('Login berhasil!');
+  //     window.location.hash = '#/stories';
+  //   } catch (err) {
+  //     alert(err.message);
+  //   } finally {
+  //     gsap.to(overlay, {
+  //       opacity: 0,
+  //       duration: 0.3,
+  //       onComplete: () => overlay.remove()
+  //     });
+  //   }
+  // }
 
-  _showOverlay(text) {
-    const overlay = document.createElement('div');
-    overlay.className = 'login-overlay';
-    overlay.textContent = text;
-    document.body.appendChild(overlay);
-    gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-    return overlay;
-  }
+  // async onRegisterClicked() {
+  //   window.location.hash = '#/register';
+  // }
+
+  // _showOverlay(text) {
+  //   const overlay = document.createElement('div');
+  //   overlay.className = 'login-overlay';
+  //   overlay.textContent = text;
+  //   document.body.appendChild(overlay);
+  //   gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+  //   return overlay;
+  // }
 }

@@ -18,3 +18,23 @@ export async function fetchStories() {
   const data = await response.json();
   return data.listStory;
 }
+
+export async function submitStory(formData) {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Token tidak ditemukan.');
+
+  const url = `${baseUrl}/stories${token ? '' : '/guest'}`;
+
+  const response = await fetch(url, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+  });
+
+  const data = await response.json();
+  if (data.error) {
+      throw new Error(data.message || 'Terjadi kesalahan');
+  }
+
+  return data;
+}
