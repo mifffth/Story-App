@@ -135,9 +135,5 @@ export class LoginView {
   navigateTo(hash) {
     window.location.hash = hash;
   }
-  
-  saveToken(token) {
-    localStorage.setItem('token', token);
-  }
 
 }

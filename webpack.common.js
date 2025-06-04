@@ -7,11 +7,12 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
+    clean: true, // bersihin dist, opsional
   },
   module: {
     rules: [
       {
-        test: /\.(png|jpe?g|gif)$/,
+        test: /\.(png|jpe?g|gif|svg)$/i,
         type: 'asset/resource',
       },
     ],
@@ -19,13 +20,18 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src/index.html'),
+      excludeChunks: ['sw'],
     }),
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src/public'),
+          from: path.resolve(__dirname, 'src/public/'), // copy semua yg di public
           to: path.resolve(__dirname, 'dist/'),
         },
+        {
+          from: path.resolve(__dirname, 'src/styles'),
+          to: path.resolve(__dirname, 'dist/styles'),
+        }
       ],
     }),
   ],

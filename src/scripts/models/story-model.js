@@ -1,4 +1,4 @@
-const baseUrl = 'https://story-api.dicoding.dev/v1';
+import { baseUrl } from '../API/api.js';
 
 export async function fetchStories() {
   const token = localStorage.getItem('token');

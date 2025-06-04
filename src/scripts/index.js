@@ -1,32 +1,27 @@
 import * as css from '../styles/styles.css';
 
-// import { AuthenticationView } from './views/authentication-view.js';
-// import { DefaultView } from './views/default-view.js';
 import { LoginView } from './views/login-view.js';
 import { RegisterView } from './views/register-view.js';
 import { StoryListView } from './views/story-list-view.js';
 import { StoryAddView } from './views/story-add-view.js';
 import { NotFoundView } from './views/not-found-view.js';
 
-
-// import { AuthenticationPresenter } from './presenters/authentication-presenter.js';
-// import { DefaultPresenter } from './presenters/default-presenter.js';
 import { LoginPresenter } from './presenters/login-presenter.js';
 import { RegisterPresenter } from './presenters/register-presenter.js';
 import { StoryListPresenter } from './presenters/story-list-presenter.js';
 import { StoryAddPresenter } from './presenters/story-add-presenter.js';
 import { NotFoundPresenter } from './presenters/not-found-presenter.js';
 import { updateAuthUI } from './utils/auth-ui.js';
-const main = document.querySelector('main');
 
-// const authView = new AuthenticationView();
-// // const authPresenter = new AuthenticationPresenter();
-// authView.setPresenter(authPresenter);
-// authPresenter.setView(authView);
-// authPresenter.onPageLoad();
+import { subscribe, unsubscribe, isCurrentPushSubscriptionAvailable } from './utils/notification-helper.js';
+
+const main = document.querySelector('main');
+const navbar = document.getElementById('main-nav');
+const menuToggle = document.getElementById('menu-toggle');
+
 
 function renderView() {
-    const hash = window.location.hash || null;
+    let hash = window.location.hash || null;
 
     const token = localStorage.getItem('token');
     const loggedIn = !!token;
@@ -40,6 +35,11 @@ function renderView() {
         let view = null;
         let presenter = null;
         switch (hash) {
+            case '':
+            case '#/':
+                view = new StoryListView(main);
+                presenter = new StoryListPresenter();
+                break;
             case '#/login':
                 view = new LoginView(main);
                 presenter = new LoginPresenter();
@@ -70,12 +70,54 @@ function renderView() {
     });
 }
 
+
 window.addEventListener('hashchange', renderView);
 window.addEventListener('load', renderView);
 window.addEventListener('DOMContentLoaded', () => {
     updateAuthUI();
 
-    document.getElementById('nav-logout').addEventListener('click', () => {
+    const subscribeBtn = document.getElementById('subscribe-button');
+    const unsubscribeBtn = document.getElementById('unsubscribe-button');
+    const updateNotificationButtons = async () => {
+        const isSubscribed = await isCurrentPushSubscriptionAvailable();
+        if (subscribeBtn) subscribeBtn.style.display = isSubscribed ? 'none' : 'inline-block';
+        if (unsubscribeBtn) unsubscribeBtn.style.display = isSubscribed ? 'inline-block' : 'none';
+    };
+
+    updateNotificationButtons();
+
+    if (subscribeBtn) // subscribe-button
+    {
+        subscribeBtn.addEventListener('click', async () => {
+            if (!isServiceWorkerAvailable()) {
+                alert('Browser tidak mendukung Push Notification.');
+                return;
+            }
+
+            await subscribe();
+            await updateNotificationButtons();
+
+            if (Notification.permission === 'granted') {
+                localStorage.setItem('subscribe', 'true');
+                alert('Berhasil berlangganan notifikasi.');
+                updateNotificationButtons();
+            }
+        });
+    }
+
+
+    if (unsubscribeBtn) {
+        unsubscribeBtn.addEventListener('click', async () => {
+
+            await unsubscribe();
+            await updateNotificationButtons();
+
+            localStorage.setItem('subscribe', 'false');
+            alert('Berhasil berhenti berlangganan notifikasi.');
+            updateNotificationButtons();
+        });
+    }
+    document.getElementById('nav-logout')?.addEventListener('click', () => {
         const confirmLogout = window.confirm('Anda yakin ingin keluar?');
 
         if (confirmLogout) {
@@ -99,13 +141,51 @@ window.addEventListener('DOMContentLoaded', () => {
             }, 1200);
         }
     });
+
+    // Efek animasi menu
     document.querySelectorAll('nav a, nav button').forEach(link => {
         link.addEventListener('mouseenter', () => {
-            gsap.to(link, { scale: 1.1, duration: 0.2, ease: 'power2.out' });
+            if (window.innerWidth > 768) {
+                gsap.to(link, { scale: 1.1, duration: 0.2, ease: 'power2.out' });
+            }
         });
 
         link.addEventListener('mouseleave', () => {
-            gsap.to(link, { scale: 1, duration: 0.2, ease: 'power2.out' });
+            if (window.innerWidth > 768) {
+                gsap.to(link, { scale: 1, duration: 0.2, ease: 'power2.out' });
+            }
         });
     });
+
+    // Klik di luar nav
+    document.addEventListener('click', (e) => {
+        const isClickInsideNav = navbar.contains(e.target);
+        const isClickOnToggle = menuToggle.contains(e.target);
+        if (!isClickInsideNav && !isClickOnToggle) {
+            navbar.classList.remove('show');
+        }
+    });
+
+    // Daftarkan Service Worker
+    if (process.env.NODE_ENV === 'production') {
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.bundle.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    }
 });
+
+function isServiceWorkerAvailable() {
+    return 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+
+

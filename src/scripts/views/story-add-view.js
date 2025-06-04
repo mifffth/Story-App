@@ -1,3 +1,6 @@
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
 export class StoryAddView {
   constructor(container) {
     this.container = container;
@@ -96,6 +99,16 @@ export class StoryAddView {
 
     const mainContent = document.querySelector("#story-form");
     const skipLink = document.querySelector(".skip-link");
+
+    L.Marker.prototype.options.icon = L.icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+          shadownAnchor: [12, 41]
+        });
 
     skipLink.addEventListener("click", function (event) {
       event.preventDefault();
@@ -263,7 +276,7 @@ export class StoryAddView {
       callback(file);
     }, 'image/jpeg', 0.95);
   }
-  
+
   showLoadingOverlay(text) {
     this.overlay = document.createElement('div');
     this.overlay.className = 'overlay';
@@ -271,7 +284,7 @@ export class StoryAddView {
     document.body.appendChild(this.overlay);
     gsap.fromTo(this.overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 });
   }
-  
+
   hideLoadingOverlay() {
     if (this.overlay) {
       gsap.to(this.overlay, {
@@ -281,7 +294,7 @@ export class StoryAddView {
       });
     }
   }
-  
+
   navigateTo(hash) {
     window.location.hash = hash;
   }

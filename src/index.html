@@ -5,12 +5,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <title>Story App</title>
+  
+  <link rel="stylesheet" href="./styles/styles.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <link rel="manifest" href="app.webmanifest" />
+  
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
-
-  <title>Story App Dicoding</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
 
   <script>
     if (!document.startViewTransition) {
@@ -20,31 +26,33 @@
       };
     }
   </script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
-  </style>
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans">
 
-  <a href="javascript:void(0)" class="skip-link">Lewati ke konten utama</a>
-  
   <header>
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between">
-      <h1 class="text-4xl font-bold mb-2 sm:mb-0">Story App</h1>
-      <nav aria-label="Navigasi utama"
-        class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center w-full sm:w-auto">
-        <a href="#/stories" class="text-blue-600 hover:underline font-bold">Daftar Cerita</a>
-        <a href="#/add" class="text-blue-600 hover:underline font-bold">Tambah Cerita</a>
-        <a href="#/login" class="text-blue-600 hover:underline font-bold">Masuk</a>
-        <a href="#/register" class="text-blue-600 hover:underline font-bold">Daftar</a>
-        <button id="nav-logout" class="text-red-600 hover:underline hidden font-bold">Keluar</button>
+    <a href="javascript:void(0)" class="skip-link">Lewati ke konten utama</a>
+  
+    <div class="header-container">
+      <h1 class="site-title">Story App</h1>
+  
+      <button id="menu-toggle" class="hamburger" aria-label="Navigasi halaman">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+  
+      <nav id="main-nav" class="nav-links">
+        <a href="#/stories">Daftar Cerita</a>
+        <a href="#/add">Tambah Cerita</a>
+        <a href="#/login">Masuk</a>
+        <a href="#/register">Daftar</a>
+        <button id="subscribe-button" class="btn subscribe-button">Subscribe <i class="fas fa-bell"></i></button>
+        <button id="unsubscribe-button" class="btn unsubscribe-button">Unsubscribe <i class="fas fa-bell-slash"></i></button>
+        <button id="nav-logout" class="logout-button">Keluar</button>
       </nav>
     </div>
+
   </header>
 
   <main id="main-content" tabindex="-1"></main>
@@ -54,6 +62,24 @@
       <p>Story App &copy; Miftah</p>
     </div>
   </footer>
+
+  <script>
+    const toggleBtn = document.getElementById('menu-toggle');
+    const nav = document.getElementById('main-nav');
+  
+    toggleBtn.addEventListener('click', () => {
+      nav.classList.toggle('show');
+    });
+  
+    // ilangin 3 strip kalo ukuran desktop
+    document.querySelectorAll('#main-nav a, #main-nav button').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth < 640) {
+          nav.classList.remove('show');
+        }
+      });
+    });
+  </script>
 
 </body>
 

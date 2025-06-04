@@ -1,4 +1,5 @@
 import { fetchStories } from '../models/story-model.js';
+import { getToken } from '../models/auth-model.js';
 
 export class StoryListPresenter {
   constructor() {
@@ -11,16 +12,16 @@ export class StoryListPresenter {
   }
   
   async onLoginClicked() {
-    window.location.hash = '#/login';
+    this.view.navigateTo('#/stories');
   }
-
+  
   async onPageLoad() {
-    const token = localStorage.getItem('token');
+    const token = getToken(); 
     if (!token) {
       this.view.renderLogin();
       return;
     }
-
+  
     this.view.renderLoading();
     try {
       this.cachedStories = await fetchStories();
@@ -33,7 +34,7 @@ export class StoryListPresenter {
   async onStorySelected(index) {
     const story = this.cachedStories[index];
     if (!story.lat || !story.lon) {
-      alert('Cerita ini tidak memiliki data lokasi.');
+      this.view.showLocationError();
     } else {
       this.view.renderStory(story);
     }

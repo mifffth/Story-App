@@ -1,4 +1,5 @@
-
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 export class StoryListView {
   constructor(container) {
@@ -11,24 +12,8 @@ export class StoryListView {
     this.presenter = presenter;
   }
 
-  renderLogin() {
-    this.container.innerHTML = `
-      <div style="
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        text-align: center;
-        font-size: 1.25rem;
-      ">
-        <p>Silakan 
-          <a id="login-link" style="text-decoration: underline; color: #3b82f6" href="#/login">
-            masuk
-          </a> 
-          untuk melihat daftar cerita
-        </p>
-      </div>
-    `;
+  showLocationError() {
+    alert('Cerita ini tidak memiliki data lokasi.');
   }
 
   renderLoading() {
@@ -39,8 +24,13 @@ export class StoryListView {
     this.container.innerHTML = `<p class="text-red-600">${message}</p>`;
   }
 
+  navigateTo(hash) {
+    window.location.hash = hash;
+  }
+
   renderStoryList(stories) {
     this.container.innerHTML = `
+        <div class="container mx-auto px-4">
           <a href="#story-list" class="skip-link">Lewati ke konten utama</a>
 
           <h2 class="font-bold mb-4 text-xl" id="story-list-heading" style="text-align: center">
@@ -112,9 +102,10 @@ export class StoryListView {
               </div>
             </div>
           </div>
-`;  
+        </div>
+`;
 
-    if (stories.length === 0) {
+    if (!stories.length){
       this.container.innerHTML = '<h2 class="font-bold mb-4 text-xl">Belum ada cerita</h2>';
       return;
     }
@@ -125,6 +116,16 @@ export class StoryListView {
     const mapModal = this.container.querySelector('#map-modal');
     const modalContent = this.container.querySelector('#modal-content');
     const mapEl = document.querySelector('#map-reports');
+
+    L.Marker.prototype.options.icon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+      shadownAnchor: [12, 41]
+    });
 
     skipLink.addEventListener("click", function (event) {
       event.preventDefault();
