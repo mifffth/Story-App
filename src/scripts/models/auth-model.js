@@ -7,7 +7,7 @@ export async function loginUser(email, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
- 
+
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Login gagal');
   return result.loginResult.token;
@@ -36,14 +36,16 @@ export async function registerUser(name, email, password) {
   };
 }
 
+// ambil dari local storage .getItem
 export async function subscribePushNotification({ endpoint, keys: { p256dh, auth } }) {
-  const accessToken = getAccessToken();
+  const accessToken = localStorage.getItem('token');
+  // const accessToken = TOKEN_KEY();
   const data = JSON.stringify({
     endpoint,
     keys: { p256dh, auth },
   });
- 
-  const fetchResponse = await fetch(`${baseUrl}/login`, {
+
+  const fetchResponse = await fetch(`${baseUrl}/notifications/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -51,19 +53,26 @@ export async function subscribePushNotification({ endpoint, keys: { p256dh, auth
     },
     body: data,
   });
-  const json = await fetchResponse.json();
- 
+
+  const responseJson = await fetchResponse.json();
+  console.log(responseJson)
+
+  if ( responseJson.error) {
+    throw new Error('Bad response from server.');
+  }
+  console.log('success')
   return {
-    ...json,
+    ...responseJson,
     ok: fetchResponse.ok,
   };
 }
- 
+
 export async function unsubscribePushNotification({ endpoint }) {
-  const accessToken = getAccessToken();
+  // const accessToken = accessToken();
+  const accessToken = localStorage.getItem('token');
   const data = JSON.stringify({ endpoint });
- 
-  const fetchResponse = await fetch(`${baseUrl}/login`, {
+
+  const fetchResponse = await fetch(`${baseUrl}/notifications/subscribe`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -72,7 +81,7 @@ export async function unsubscribePushNotification({ endpoint }) {
     body: data,
   });
   const json = await fetchResponse.json();
- 
+
   return {
     ...json,
     ok: fetchResponse.ok,

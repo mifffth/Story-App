@@ -1,127 +1,125 @@
-import { convertBase64ToUint8Array } from './index';
-import { VAPID_PUBLIC_KEY, unsubscribePushNotification, subscribePushNotification } from "../API/api";
+import { subscribePushNotification, unsubscribePushNotification } from '../models/auth-model.js';
+import { convertBase64ToUint8Array } from './index.js';
+import { VAPID_PUBLIC_KEY } from '../API/api.js';
 
-export function generateSubscribeOptions() {
+async function getServiceWorkerRegistration() {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('Service worker tidak didukung di browser ini.');
+        return null;
+    }
+    try {
+        return await navigator.serviceWorker.ready;
+    } catch (error) {
+        console.error('Gagal menyiapkan service worker:', error);
+        return null;
+    }
+}
+
+function generateSubscribeOptions() {
     return {
         userVisibleOnly: true,
         applicationServerKey: convertBase64ToUint8Array(VAPID_PUBLIC_KEY),
     };
 }
 
-export function isNotificationAvailable() {
-    return 'Notification' in window;
+export async function isSubscribed() {
+    const registration = await getServiceWorkerRegistration();
+    if (!registration) return false;
+    const subscription = await registration.pushManager.getSubscription();
+    return !!subscription;
 }
 
-export function isNotificationGranted() {
-    return Notification.permission === 'granted';
-}
-
-export async function isCurrentPushSubscriptionAvailable() {
-    return !!(await getPushSubscription());
-}
-
-export async function requestNotificationPermission() {
-    if (!isNotificationAvailable()) {
-        console.error('Notification API unsupported.');
-        return false;
-    }
-
-    if (isNotificationGranted()) {
-        return true;
-    }
-
-    const status = await Notification.requestPermission();
-
-    if (status === 'denied') {
-        alert('Izin notifikasi ditolak.');
-        return false;
-    }
-
-    if (status === 'default') {
-        alert('Izin notifikasi ditutup atau diabaikan.');
-        return false;
-    }
-
-    return true;
-}
-
-export async function getPushSubscription() {
-    const registration = await navigator.serviceWorker.getRegistration();
-    return await registration.pushManager.getSubscription();
-}
-
-export async function subscribe() {
-    if (!(await requestNotificationPermission())) {
+export async function subscribe(onSuccess) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        alert('Browser tidak mendukung service worker atau notifikasi push');
         return;
     }
 
-    if (await isCurrentPushSubscriptionAvailable()) {
-        alert('Anda sudah berlangganan notifikasi.');
-        return;
-    }
-
-    console.log('Telah berlangganan notifikasi');
-
-    const failureSubscribeMessage = 'Langganan push notification gagal diaktifkan.';
-    const successSubscribeMessage = 'Langganan push notification berhasil diaktifkan.';
-    let pushSubscription;
     try {
-        const registration = await navigator.serviceWorker.getRegistration();
-        pushSubscription = await registration.pushManager.subscribe(generateSubscribeOptions());
-
-        const { endpoint, keys } = pushSubscription.toJSON();
-        const response = await subscribePushNotification({ endpoint, keys });
-
-        if (!response.ok) {
-            console.error('subscribe: response:', response);
-            alert(failureSubscribeMessage);
-            await pushSubscription.unsubscribe();
-            await pushSubscription.unsubscribe();
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            alert('Izin notifikasi ditolak.');
             return;
         }
-        console.log({ endpoint, keys });
-        alert(successSubscribeMessage);
+
+        const registration = await getServiceWorkerRegistration();
+        if (!registration) {
+            console.error('Service worker belum siap');
+            return;
+        }
+
+        let subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            alert('Kamu sudah berlangganan notifikasi.');
+            return;
+        }
+
+        const options = generateSubscribeOptions();
+        subscription = await registration.pushManager.subscribe(options);
+
+        const {
+            endpoint,
+            keys
+        } = subscription.toJSON();
+        const response = await subscribePushNotification({
+            endpoint,
+            keys
+        });
+
+        if (!response.ok) {
+            alert('Gagal berlangganan ke server.');
+            await subscription.unsubscribe(); 
+            return;
+        }
+
+        alert('Berhasil berlangganan notifikasi!');
+
+        if (onSuccess) {
+            onSuccess(true);
+        }
 
     } catch (error) {
-        console.error('subscribe: error:', error);
-        alert(failureSubscribeMessage);
+        console.error('Terjadi kesalahan saat berlangganan:', error);
+        alert('Gagal berlangganan notifikasi.');
+        if (onSuccess) {
+            onSuccess(false);
+        }
     }
 }
 
-export async function unsubscribe() {
-    const failureUnsubscribeMessage = 'Langganan push notification gagal dinonaktifkan.';
-    const successUnsubscribeMessage = 'Langganan push notification berhasil dinonaktifkan.';
+export async function unsubscribe(onSuccess) {
+    const registration = await getServiceWorkerRegistration();
+    if (!registration) {
+        alert('Service worker tidak tersedia untuk berhenti langganan.');
+        return;
+    }
 
     try {
-        const pushSubscription = await getPushSubscription();
-
-        if (!pushSubscription) {
-            alert('Tidak bisa memutus langganan push notification karena belum berlangganan sebelumnya.');
+        const subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+            alert('Kamu belum berlangganan.');
+            if (onSuccess) onSuccess(false);
             return;
         }
 
-        const { endpoint, keys } = pushSubscription.toJSON();
-        const response = await unsubscribePushNotification({ endpoint });
+        const { endpoint } = subscription;
+        const response = await unsubscribePushNotification({
+            endpoint
+        });
 
         if (!response.ok) {
-            alert(failureUnsubscribeMessage);
-            console.error('unsubscribe: response:', response);
-
+            alert('Gagal berhenti langganan dari server. Coba lagi.');
             return;
         }
 
-        const unsubscribed = await pushSubscription.unsubscribe();
+        await subscription.unsubscribe();
 
-        if (!unsubscribed) {
-            alert(failureUnsubscribeMessage);
-            await subscribePushNotification({ endpoint, keys });
-
-            return;
+        alert('Berhasil berhenti berlangganan notifikasi.');
+        if (onSuccess) {
+            onSuccess(false);
         }
-
-        alert(successUnsubscribeMessage);
     } catch (error) {
-        alert(failureUnsubscribeMessage);
-        console.error('unsubscribe: error:', error);
+        console.error('Terjadi kesalahan saat berhenti langganan:', error);
+        alert('Gagal berhenti langganan.');
     }
 }

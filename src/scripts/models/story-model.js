@@ -21,7 +21,7 @@ export async function fetchStories() {
 
 export async function submitStory(formData) {
   const token = localStorage.getItem('token');
-  if (!token) throw new Error('Token tidak ditemukan.');
+  // if (!token) throw new Error('Token tidak ditemukan.');
 
   const url = `${baseUrl}/stories${token ? '' : '/guest'}`;
 
@@ -37,4 +37,37 @@ export async function submitStory(formData) {
   }
 
   return data;
+}
+
+export async function sendNewStoryNotification(storyDescription) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.warn('No token found, cannot send new story notification.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/notifications`, { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title: 'Story berhasil dibuat',
+        options: {
+          body: `Anda telah membuat story baru dengan deskripsi: ${storyDescription}`
+        }
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error('Failed to send new story notification:', data.message || 'Unknown error');
+    } else {
+      console.log('New story notification sent:', data.message);
+    }
+  } catch (error) {
+    console.error('Error sending new story notification:', error);
+  }
 }
