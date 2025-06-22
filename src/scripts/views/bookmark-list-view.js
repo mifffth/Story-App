@@ -27,8 +27,13 @@ export class BookmarkListView {
         <h2 class="font-bold mb-4 text-xl" style="text-align: center">
           Cerita tersimpan
         </h2>
+
+        <a href="#bookmark-list" class="skip-link">Lewati ke konten utama</a>
+
         <div 
           id="bookmark-list" 
+          tabindex="-1" 
+          role="main" 
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
           role="list"
         ></div>
@@ -87,8 +92,10 @@ export class BookmarkListView {
     if (!stories.length) {
       this.container.querySelector('#bookmark-list').innerHTML = '<p class="text-center">Belum ada cerita tersimpan</p>';
       return;
-    }
+    }  
 
+    const mainContent = document.querySelector("#bookmark-list");
+    const skipLink = document.querySelector(".skip-link");
     const listEl = this.container.querySelector('#bookmark-list');
     const mapModal = this.container.querySelector('#map-modal'); 
     const modalContent = this.container.querySelector('#modal-content'); 
@@ -104,6 +111,13 @@ export class BookmarkListView {
         <button data-story-id="${story.id}" class="remove-bookmark-btn bg-red-500 text-white px-4 py-2 rounded-md mt-2">Hapus Bookmark</button>
       `;
       listEl.appendChild(item);
+
+      skipLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        skipLink.blur();
+        mainContent.focus();
+        mainContent.scrollIntoView();
+      });
 
       item.querySelector('img').addEventListener('click', () => { 
         this.renderStory(story); 
