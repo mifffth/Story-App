@@ -85,7 +85,7 @@ export class BookmarkListView {
     `;
 
     if (!stories.length) {
-      this.container.querySelector('#bookmark-list').innerHTML = '<p class="text-center">Belium ada cerita tersimpan</p>';
+      this.container.querySelector('#bookmark-list').innerHTML = '<p class="text-center">Belum ada cerita tersimpan</p>';
       return;
     }
 

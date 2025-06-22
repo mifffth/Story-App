@@ -16,7 +16,7 @@ export class BookmarkListPresenter {
       const stories = await this.bookmarkDb.getAllStories(); 
       this.view.renderBookmarkList(stories); 
     } catch (error) {
-      this.view.renderError('Failed to load bookmarked stories: ' + error.message); 
+      this.view.renderError('Terjadi kesalahan: ' + error.message); 
     }
   }
 
@@ -26,6 +26,6 @@ export class BookmarkListPresenter {
 
   async removeBookmark(id) { 
     await this.bookmarkDb.deleteStory(id); 
-    alert('Story removed from bookmarks!'); 
+    alert('Cerita dihapus dari bookmarks'); 
   }
 }
