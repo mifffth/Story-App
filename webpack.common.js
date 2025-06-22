@@ -7,7 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
-    clean: true, // bersihin dist, opsional
+    clean: true, 
   },
   module: {
     rules: [
@@ -25,7 +25,7 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src/public/'), // copy semua yg di public
+          from: path.resolve(__dirname, 'src/public/'), 
           to: path.resolve(__dirname, 'dist/'),
         },
         {
