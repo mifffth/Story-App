@@ -1,3 +1,4 @@
+import imageCompression from 'browser-image-compression';
 import { submitStory, sendNewStoryNotification } from '../models/story-model.js'; 
 
 export class StoryAddPresenter {
@@ -14,12 +15,33 @@ export class StoryAddPresenter {
   }
 
   async onSubmitPhoto(photo, formData) {
-    if (!photo || photo.size > 1048576) { 
-      this.view.renderSubmitError('Foto wajib diunggah dan harus kurang dari 1MB'); 
+    if (!photo) {
+      this.view.renderSubmitError('Foto wajib diunggah');
       return;
     }
 
-    this.view.showLoadingOverlay('Mengunggah cerita...'); 
+    const options = {
+      maxSizeMB: 1, 
+      maxWidthOrHeight: 1024,
+      useWebWorker: true
+    };
+
+    let compressedPhoto;
+    try {
+      compressedPhoto = await imageCompression(photo, options);
+    } catch (compressionErr) {
+      this.view.renderSubmitError('Gagal mengompresi foto: ' + compressionErr.message);
+      return;
+    }
+
+    if (compressedPhoto.size > 1048576) {
+      this.view.renderSubmitError('Foto setelah kompresi masih lebih dari 1MB, mohon gunakan kamera web/pilih file lain');
+      return;
+    }
+
+    formData.set('photo', compressedPhoto); 
+
+    this.view.showLoadingOverlay('Mengunggah cerita...');
 
     try {
       const result = await submitStory(formData); 

@@ -42,7 +42,7 @@ export async function submitStory(formData) {
 export async function sendNewStoryNotification(storyDescription) {
   const token = localStorage.getItem('token');
   if (!token) {
-    console.warn('No token found, cannot send new story notification.');
+    console.warn('Tidak ada token yang tersedia. Tidak dapat mengirim notifikasi.');
     return;
   }
 
