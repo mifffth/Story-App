@@ -10,14 +10,14 @@
   "theme_color": "#3f51b5",
   "icons": [
     {
-      "src": "./icons/icon-512x512.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "./screenshots/homepage.png",
+      "src": "screenshots/homepage.png",
       "sizes": "1895x900",
       "type": "image/png"
     }

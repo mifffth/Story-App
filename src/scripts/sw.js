@@ -6,10 +6,7 @@ import { setCatchHandler } from 'workbox-routing';
 
 const BASE_URL = 'https://story-api.dicoding.dev';
 
-precacheAndRoute([
-  ...self.__WB_MANIFEST,
-  { url: '/Story-App/offline.html', revision: null } 
-]);
+precacheAndRoute(self.__WB_MANIFEST); 
 
 registerRoute(
   ({ url }) => url.origin === 'https://cdnjs.cloudflare.com' || url.origin.includes('fontawesome'),
