@@ -100,7 +100,7 @@ registerRoute(
 
 setCatchHandler(async ({ event }) => {
   if (event.request.mode === 'navigate') {
-    return caches.match('/Story-App/offline.html'); 
+    return caches.match('/offline.html');
   }
   return Response.error();
 });
@@ -113,7 +113,7 @@ self.addEventListener('push', (event) => {
       let title = 'Story App';
       let options = {
         body: 'Push message received',
-        icon: '/icons/icon-512x512.png',
+        icon: '/docs/icons/icon-512x512.png', 
         tag: 'story-app-tag',
       };
 
