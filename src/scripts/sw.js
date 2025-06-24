@@ -2,15 +2,20 @@ import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { setCatchHandler } from 'workbox-routing'; 
 
 const BASE_URL = 'https://story-api.dicoding.dev';
-precacheAndRoute(self.__WB_MANIFEST);
+
+precacheAndRoute([
+  ...self.__WB_MANIFEST,
+  { url: '/Story-App/offline.html', revision: null } 
+]);
 
 registerRoute(
   ({ url }) => url.origin === 'https://cdnjs.cloudflare.com' || url.origin.includes('fontawesome'),
   new CacheFirst({
     cacheName: 'fontawesome',
-    plugins: [ 
+    plugins: [
       new CacheableResponsePlugin({
         statuses: [200],
       }),
@@ -24,7 +29,7 @@ registerRoute(
     !url.pathname.endsWith('login-view.js'),
   new CacheFirst({
     cacheName: 'assets-cache',
-    plugins: [ 
+    plugins: [
       new CacheableResponsePlugin({
         statuses: [200],
       }),
@@ -63,7 +68,7 @@ registerRoute(
   ({ url }) => url.origin.includes('tile.openstreetmap.org'),
   new StaleWhileRevalidate({
     cacheName: 'osm-tiles',
-    plugins: [ 
+    plugins: [
       new CacheableResponsePlugin({
         statuses: [200],
       }),
@@ -75,7 +80,7 @@ registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({
     cacheName: 'images-cache',
-    plugins: [ 
+    plugins: [
       new CacheableResponsePlugin({
         statuses: [200],
       }),
@@ -95,6 +100,13 @@ registerRoute(
     ],
   })
 );
+
+setCatchHandler(async ({ event }) => {
+  if (event.request.mode === 'navigate') {
+    return caches.match('/Story-App/offline.html'); 
+  }
+  return Response.error();
+});
 
 self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push received');
@@ -144,9 +156,3 @@ self.addEventListener('notificationclick', (event) => {
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', () => self.clients.claim());
-
-
-
-
-
-

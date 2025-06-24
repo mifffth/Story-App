@@ -194,7 +194,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 if ('serviceWorker' in navigator) { 
     window.addEventListener('load', () => { 
-        navigator.serviceWorker.register('/sw.bundle.js') 
+        navigator.serviceWorker.register('./sw.bundle.js') 
             .then(registration => { 
                 console.log('SW registered:', registration); 
             })
