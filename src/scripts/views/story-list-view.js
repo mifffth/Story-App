@@ -144,6 +144,7 @@ export class StoryListView {
     stories.forEach((story, index) => {
       const item = document.createElement('article');
       item.className = 'bg-white rounded-xl shadow-md overflow-hidden p-4 flex flex-col gap-2 text-sm hover:shadow-lg transition-shadow duration-200';
+      item.setAttribute('tabindex', '0');
       item.innerHTML = `
     <img src="${story.photoUrl}" alt="Foto dari ${story.name}" class="w-full h-auto rounded-md cursor-pointer object-cover" loading="lazy" />
     <h3 class="text-lg font-semibold">${story.name}</h3>

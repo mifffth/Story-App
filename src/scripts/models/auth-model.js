@@ -1,8 +1,18 @@
 import { baseUrl } from '../API/api.js';
 const TOKEN_KEY = 'token';
 
+const ENDPOINTS = {
+  // Auth
+  REGISTER: `${baseUrl}/register`,
+  LOGIN: `${baseUrl}/login`,
+
+  // Notification
+  SUBSCRIBE: `${baseUrl}/notifications/subscribe`,
+  UNSUBSCRIBE: `${baseUrl}/notifications/subscribe`,
+};
+
 export async function loginUser(email, password) {
-  const response = await fetch(`${baseUrl}/login`, {
+  const response = await fetch(ENDPOINTS.LOGIN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -14,7 +24,7 @@ export async function loginUser(email, password) {
 }
 
 export async function registerUser(name, email, password) {
-  const response = await fetch(`${baseUrl}/register`, {
+  const response = await fetch(ENDPOINTS.REGISTER, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password }),
@@ -36,7 +46,6 @@ export async function registerUser(name, email, password) {
   };
 }
 
-// ambil dari local storage .getItem
 export async function subscribePushNotification({ endpoint, keys: { p256dh, auth } }) {
   const accessToken = localStorage.getItem('token');
   // const accessToken = TOKEN_KEY();
@@ -45,7 +54,7 @@ export async function subscribePushNotification({ endpoint, keys: { p256dh, auth
     keys: { p256dh, auth },
   });
 
-  const fetchResponse = await fetch(`${baseUrl}/notifications/subscribe`, {
+  const fetchResponse = await fetch(ENDPOINTS.SUBSCRIBE, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -72,7 +81,7 @@ export async function unsubscribePushNotification({ endpoint }) {
   const accessToken = localStorage.getItem('token');
   const data = JSON.stringify({ endpoint });
 
-  const fetchResponse = await fetch(`${baseUrl}/notifications/subscribe`, {
+  const fetchResponse = await fetch(ENDPOINTS.UNSUBSCRIBE, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

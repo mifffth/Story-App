@@ -6,3 +6,5 @@ dist
 
 # Files
 .env
+manifest.json
+
