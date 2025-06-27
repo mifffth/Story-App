@@ -53,7 +53,7 @@ export class StoryAddPresenter {
     } catch (err) {
       this.view.renderSubmitError('Gagal menambahkan cerita: ' + err.message);
     } finally {
-      this.view.hideLoadingOverlay();
+      this.view.hideLoadifngOverlay();
     }
   }
 }

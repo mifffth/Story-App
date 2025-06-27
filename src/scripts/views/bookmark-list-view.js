@@ -103,6 +103,7 @@ export class BookmarkListView {
     stories.forEach((story) => {
       const item = document.createElement('article');
       item.className = 'bg-white rounded-xl shadow-md overflow-hidden p-4 flex flex-col gap-2 text-sm';
+      item.setAttribute('tabindex', '0');
       item.innerHTML = `
         <img src="${story.photoUrl}" alt="Photo from ${story.name}" class="w-full h-auto rounded-md object-cover cursor-pointer" loading="lazy" />
         <h3 class="text-lg font-semibold">${story.name}</h3>
