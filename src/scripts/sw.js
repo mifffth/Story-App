@@ -1,8 +1,7 @@
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'; // Ensure StaleWhileRevalidate is imported
-import { setCatchHandler } from 'workbox-routing';
+import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'; 
 
 const BASE_URL = 'https://story-api.dicoding.dev';
 
