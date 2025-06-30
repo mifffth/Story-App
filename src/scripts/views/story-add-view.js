@@ -23,14 +23,12 @@ export class StoryAddView {
             role="main" 
             style="flex: 1 1 300px; display: flex; flex-direction: column;">
         <label for="description">Deskripsi:</label>
-        <textarea 
-          id="description" 
-          name="description" 
-          required 
-          aria-label="Deskripsi cerita" 
-          style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; font-size: 1rem; margin-bottom: 1rem; width: 100%;">
-        </textarea>
-
+        <textarea
+          id="description"
+          name="description"
+          required
+          aria-label="Deskripsi cerita"
+          style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; font-size: 1rem; margin-bottom: 1rem; width: 100%;"></textarea>
         <label for="photo">Upload Gambar:</label>
         <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
           <input 
@@ -38,7 +36,7 @@ export class StoryAddView {
             id="photo" 
             name="photo" 
             accept="image/*" 
-            required 
+            required
             aria-label="Pilih gambar untuk diunggah" 
             style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; font-size: 1rem; width: 100%;">
           <button 
@@ -58,21 +56,12 @@ export class StoryAddView {
             aria-label="Pratinjau kamera" 
             style="width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 1rem;">
           </video>
+          <img id="photo-preview" 
+               style="display: none; width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 1rem;" 
+               alt="Pratinjau foto yang diambil">
           <div style="display: flex; justify-content: center; gap: 1rem;">
-            <button 
-              type="button" 
-              id="capture-button" 
-              aria-label="Ambil foto dari kamera" 
-              style="padding: 8px 16px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              Ambil foto
-            </button>
-            <button 
-              type="button" 
-              id="cancel-button" 
-              aria-label="Batalkan dan tutup kamera" 
-              style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              Batal
-            </button>
+            <button type="button" id="capture-button" aria-label="Ambil foto dari kamera" style="padding: 8px 16px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">Ambil foto</button>
+            <button type="button" id="cancel-button" aria-label="Batalkan dan tutup kamera" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">Batal</button>
           </div>
         </div>
 
@@ -96,6 +85,7 @@ export class StoryAddView {
     this.initMap();
     this.initSubmit();
     this.initCamera();
+    this.initFileInput(); 
 
     const mainContent = document.querySelector("#story-form");
     const skipLink = document.querySelector(".skip-link");
@@ -195,6 +185,11 @@ export class StoryAddView {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const descriptionInput = form.querySelector('#description');
+      const cleanedDescription = descriptionInput.value.trim();
+
+      descriptionInput.value = cleanedDescription;
+
       const photo = form.photo.files[0];
       const formData = new FormData(form);
       this.presenter.onSubmitPhoto(photo, formData);
@@ -207,12 +202,28 @@ export class StoryAddView {
     const captureButton = document.getElementById('capture-button');
     const cancelButton = document.getElementById('cancel-button');
     const photoInput = document.getElementById('photo');
+    const cameraPreview = document.getElementById('camera-preview');
+    const photoPreview = document.getElementById('photo-preview');
 
-    cameraButton.addEventListener('click', async () => { await this.startCamera() });
+    cameraButton.addEventListener('click', async () => {
+      cameraPreview.style.display = 'block';
+      video.style.display = 'block';
+      photoPreview.style.display = 'none';
+      captureButton.style.display = 'inline-block'; 
+      cancelButton.textContent = 'Batal'; 
+      await this.startCamera();
+    });
+
     captureButton.addEventListener('click', async () => {
       if (!this.stream) return;
       const canvas = this.captureImageFromVideo(video);
-      await this.stopCamera();
+      await this.stopCamera(); 
+
+      photoPreview.src = canvas.toDataURL('image/jpeg');
+      photoPreview.style.display = 'block';
+      captureButton.style.display = 'none'; 
+      cancelButton.textContent = 'Hapus Foto';
+
       this.canvasToFile(canvas, (file) => {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
@@ -220,8 +231,58 @@ export class StoryAddView {
       });
     });
 
-    cancelButton.addEventListener('click', async () => { await this.stopCamera(); });
-    window.addEventListener('hashchange', async () => { await this.stopCamera(); });
+    cancelButton.addEventListener('click', async () => {
+      await this.stopCamera(); 
+      cameraPreview.style.display = 'none'; 
+      photoPreview.style.display = 'none';  
+      photoPreview.src = ''; 
+      photoInput.value = ''; 
+      captureButton.style.display = 'inline-block'; 
+      cancelButton.textContent = 'Batal'; 
+    });
+
+    window.addEventListener('hashchange', async () => {
+      await this.stopCamera();
+      cameraPreview.style.display = 'none';
+      photoPreview.style.display = 'none';
+      photoPreview.src = '';
+      photoInput.value = '';
+      captureButton.style.display = 'inline-block';
+      cancelButton.textContent = 'Batal';
+    });
+  }
+
+  initFileInput() {
+    const photoInput = document.getElementById('photo');
+    const cameraPreview = document.getElementById('camera-preview');
+    const video = document.getElementById('video');
+    const photoPreview = document.getElementById('photo-preview');
+    const captureButton = document.getElementById('capture-button');
+    const cancelButton = document.getElementById('cancel-button');
+
+    photoInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          photoPreview.src = e.target.result;
+          cameraPreview.style.display = 'block'; 
+          video.style.display = 'none';           
+          photoPreview.style.display = 'block';   
+          captureButton.style.display = 'none';  
+          cancelButton.textContent = 'Hapus Foto'; 
+          this.stopCamera();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        cameraPreview.style.display = 'none';
+        photoPreview.style.display = 'none';
+        photoPreview.src = '';
+        captureButton.style.display = 'inline-block';
+        cancelButton.textContent = 'Batal';
+        this.stopCamera();
+      }
+    });
   }
 
   async getCameraStream() {
@@ -229,9 +290,8 @@ export class StoryAddView {
   }
 
   async startCamera() {
-    const cameraPreview = document.getElementById('camera-preview');
-    cameraPreview.style.display = 'block';
-
+    const video = document.getElementById('video');
+   
     if (!this.stream) {
       try {
         this.stream = await this.getCameraStream();
@@ -239,17 +299,13 @@ export class StoryAddView {
       } catch (err) {
         console.error('Camera error:', err);
         alert('Tidak dapat mengakses kamera!');
+        document.getElementById('camera-preview').style.display = 'none';
       }
     }
   }
 
   async stopCamera() {
-    const cameraPreview = document.getElementById('camera-preview');
-    if (cameraPreview) {
-      cameraPreview.style.display = 'none';
-    }
-
-    if (this.stream) {
+   if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
     }
@@ -257,6 +313,7 @@ export class StoryAddView {
     const video = document.getElementById('video');
     if (video) {
       video.srcObject = null;
+      video.style.display = 'none';
     }
   }
 

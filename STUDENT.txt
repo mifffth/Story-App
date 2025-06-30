@@ -1,3 +1,3 @@
 APP_URL=<url_aplikasi>
 MAP_SERVICE_API_KEY=<api_key>
-https://musical-beijinho-a29923.netlify.app/
+https://mifffth.github.io/Story-App/
